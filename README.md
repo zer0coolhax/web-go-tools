@@ -2,12 +2,15 @@
 
 A simple script to install and configure Go along with popular security and reconnaissance tools.
 
+Note: Yes, some of the tools you can install via Kali's repository using apt install toolName but this felt like making a script : )
+
 ## Features
 
 - Installs Go (if not already installed)
 - Configures Go environment variables in your `.zshrc`
 - Installs selected Go tools from `tools.txt`
 - Command-line flag based options for flexible installation
+- Automatic tool updates with version checking
 
 ## Prerequisites
 
@@ -44,6 +47,7 @@ Options:
   -g, --go            Install Go only
   -e, --env           Setup Go environment only
   -t, --tools         Install Go tools only
+  -u, --update        Check and update tools if needed
   -h, --help          Display help message
 ```
 
@@ -59,8 +63,40 @@ Options:
 # Install Go and setup environment
 ./install.sh -g -e
 
+# Check and update tools if needed
+./install.sh --update
+
 # Show help
 ./install.sh --help
+```
+
+## Tool Updates
+
+The script includes functionality to automatically check and update tools:
+
+```bash
+./install.sh --update
+```
+
+This will:
+1. Check each installed tool against its latest version
+2. Display current and latest versions
+3. Automatically update any tools that need updating
+4. Show a summary of the update process
+
+Example output:
+```
+Checking github.com/tomnomnom/assetfinder...
+assetfinder is up to date (version: v0.1.1)
+
+Checking github.com/tomnomnom/httprobe...
+httprobe has an update available:
+  Current: v0.1.2
+  Latest:  v0.1.3
+
+Updating tools that need updates...
+Updating github.com/tomnomnom/httprobe@latest...
+All updates completed!
 ```
 
 ## Included Tools
@@ -76,15 +112,9 @@ The following tools are included in the installation:
 While some of these tools are available through package managers (like apt), this installer provides the following advantages:
 
 1. **Latest Versions**: The tools are installed directly from their source repositories, ensuring you get the most recent features and bug fixes.
-2. **Manual Updates**: You can update the tools manually by running the installer again or using `go install` directly.
+2. **Automatic Updates**: The update checker automatically updates tools that need updating.
 3. **Consistent Installation**: All tools are installed in your Go workspace, making them easier to manage and update.
-
-To update the tools manually, you can run:
-```bash
-go install github.com/tomnomnom/assetfinder@latest
-go install github.com/tomnomnom/httprobe@latest
-go install github.com/sensepost/gowitness@latest
-```
+4. **Version Checking**: The update checker helps you stay informed about available updates.
 
 ## Troubleshooting
 
