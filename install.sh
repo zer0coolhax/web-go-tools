@@ -22,6 +22,7 @@ usage() {
     echo "  -e, --env           Setup Go environment only"
     echo "  -t, --tools         Install Go tools only"
     echo "  -u, --update        Check and update tools if needed"
+    echo "  -r, --remove        Remove installed tools and optionally Go"
     echo "  -h, --help          Display this help message"
     echo
     echo "Examples:"
@@ -29,6 +30,49 @@ usage() {
     echo "  $0 --tools          # Install tools only"
     echo "  $0 -g -e            # Install Go and setup environment"
     echo "  $0 --update         # Check and update tools if needed"
+    echo "  $0 --remove         # Remove tools and optionally Go"
+}
+
+# Function to remove tools and optionally Go
+remove_tools() {
+    echo -e "${YELLOW}Removing installed tools...${NC}"
+    
+    # Read tools from tools.txt and remove them
+    while IFS= read -r tool || [ -n "$tool" ]; do
+        if [ -n "$tool" ]; then
+            # Extract tool name without @latest
+            tool_name=$(echo "$tool" | cut -d'@' -f1)
+            # Get the binary name (last part of the path)
+            binary_name=$(basename "$tool_name")
+            
+            echo -e "${YELLOW}Removing $binary_name...${NC}"
+            rm -f "$GOPATH/bin/$binary_name"
+        fi
+    done < tools.txt
+    
+    echo -e "${GREEN}All tools have been removed!${NC}"
+    
+    # Ask if user wants to remove Go
+    read -p "Do you want to remove Go as well? (y/N): " remove_go
+    if [[ $remove_go =~ ^[Yy]$ ]]; then
+        echo -e "${YELLOW}Removing Go...${NC}"
+        
+        # Remove Go binary
+        sudo rm -rf /usr/local/go
+        
+        # Remove Go from PATH in .zshrc
+        sed -i '/export PATH=\$PATH:\/usr\/local\/go\/bin/d' ~/.zshrc
+        
+        # Remove Go environment variables
+        sed -i '/export GOPATH=\$HOME\/go/d' ~/.zshrc
+        sed -i '/export PATH=\$PATH:\$GOPATH\/bin/d' ~/.zshrc
+        
+        # Remove Go workspace
+        rm -rf ~/go
+        
+        echo -e "${GREEN}Go has been removed!${NC}"
+        echo -e "${YELLOW}Please restart your terminal or run 'source ~/.zshrc' to apply changes.${NC}"
+    fi
 }
 
 # Function to check for tool updates
@@ -186,6 +230,9 @@ while [ "$1" != "" ]; do
             ;;
         -u | --update )
             check_updates
+            ;;
+        -r | --remove )
+            remove_tools
             ;;
         -h | --help )
             usage
